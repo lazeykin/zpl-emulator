@@ -148,7 +148,8 @@ function startTcpServer () {
         sock.on('data', function(data) {
             // chrome.sockets.tcp.onReceive.addListener(function (info) {
             notify('{0} bytes received from Client: <b>{1}</b> Port: <b>{2}</b>'.format(data.length, clientSocketInfo.peerAddress, clientSocketInfo.peerPort), 'print', 'info', 1000);
-            var zpls = String.fromCharCode.apply(null, data).split(/\^XZ/);
+            var zpl = data;
+            // String.fromCharCode.apply(null, data).split(/\^XZ/);
             if (!configs.keepTcpSocket) {
                 server.close();
             }
@@ -156,11 +157,11 @@ function startTcpServer () {
             var width = parseFloat(configs.width) / factor;
             var height = parseFloat(configs.height) / factor;
 
-            for (var i in zpls) {
-                var zpl = zpls[i];
-                if (!(!zpl || !zpl.length)) {
-                    zpl += '^XZ';
-                }
+            // for (var i in zpls) {
+            //     var zpl = zpls[i];
+            //     if (!(!zpl || !zpl.length)) {
+            //         zpl += '^XZ';
+            //     }
 
                 // if (configs['saveLabels']) {
                 //     if (configs['filetype'] == '2') {
@@ -169,17 +170,20 @@ function startTcpServer () {
                 // }
 
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'http://api.labelary.com/v1/printers/{0}dpmm/labels/{1}x{2}/0/'.format(configs.density, width, height), true);
-                xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                //http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/
+                xhr.open('GET', 'http://api.labelary.com/v1/printers/{0}dpmm/labels/{1}x{2}/0/{3}'.format(configs.density, width, height, encodeURIComponent(zpl)), true);
+               // xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                 xhr.responseType = 'blob';
                 xhr.onload = function(e) {
                     if (this.status == 200) {
                         var blob = this.response;
+                       // notify(JSON.stringify(this.response).format(), 'print', 'info', 10000);
                         // if (configs['saveLabels']) {
                         //     if (configs['filetype'] == '1') {
                         //         saveLabel(blob, 'png');
                         //     }
                         // }
+                  
                         var size = getSize(width, height);
                         var img = document.createElement('img');
                         img.setAttribute('height', size.height);
@@ -197,8 +201,8 @@ function startTcpServer () {
                         $('#label').animate({ 'top': '0px' }, 1500);
                     }
                 };
-                xhr.send(zpl);
-            }
+                xhr.send();
+          //  }
         });
         // chrome.sockets.tcp.getInfo(clientInfo.clientSocketId, function (socketInfo) {
         //                 clientSocketInfo = socketInfo;
